@@ -13,6 +13,7 @@ const createOrgSchema = z.object({
     .min(3, "Org name must be at least 3 characters long")
     .max(50, "Org name cannot exceed 50 characters"),
   description: z.string().trim().optional(),
+  members: z.array(objectIdSchema).optional(),
 })
 
 const getOrgSchema = z.object({
@@ -29,6 +30,7 @@ const updateOrgSchema = z.object({
     .max(50, "Org name cannot exceed 50 characters")
     .optional(),
   description: z.string().trim().optional(),
+  members: z.array(objectIdSchema).optional(),
 })
 
 const deleteOrgSchema = z.object({

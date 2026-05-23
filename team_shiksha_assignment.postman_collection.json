@@ -1,0 +1,387 @@
+{
+  "info": {
+    "_postman_id": "fb294bf6-be07-4f07-ac3c-8ad938058746",
+    "name": "team_shiksha_assignment",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "28454563"
+  },
+  "item": [
+    {
+      "name": "user/auth",
+      "item": [
+        {
+          "name": "register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"member.1@member.com\",\n    \"password\": \"member1123#\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/register",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"super.admin@superadmin.com\",\n    \"password\":\"superadmin123#\"\n}\n\n// {\n//     \"email\":\"admin@admin.com\",\n//     \"password\":\"admin123#\"\n// }\n\n// {\n//     \"email\": \"member.1@member.com\",\n//     \"password\":\"member1123#\"\n// }\n\n// {\n//     \"email\": \"member.2@member.com\",\n//     \"password\":\"member2123#\"\n// }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/login",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "// {\n//     \"email\": \"super.admin@superadmin.com\",\n//     \"password\":\"superadmin123#\"\n// }\n\n{\n    \"email\":\"admin@admin.com\",\n    \"password\":\"admin123#\"\n}\n\n// {\n//     \"email\": \"member.1@member.com\",\n//     \"password\":\"member1123#\"\n// }\n\n// {\n//     \"email\": \"member.2@member.com\",\n//     \"password\":\"member2123#\"\n// }"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/auth/logout",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "org",
+      "item": [
+        {
+          "name": "create org",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Org\",\n  \"description\": \"This is the Acme Org\",\n  \"members\":[]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/org",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "org"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "add member",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"memberId\": \"6a11d97b8957a0130c43bece\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/org/6a11de44697ea8bd637b0f05/members",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "org",
+                "6a11de44697ea8bd637b0f05",
+                "members"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update org",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"Globex\",\n    \"description\":\"This organisation is Globex\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/org/6a11ade495c22f68dcbe576f",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "org",
+                "6a11ade495c22f68dcbe576f"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Org",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/org/6a11ad3c95c22f68dcbe575e",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "org",
+                "6a11ad3c95c22f68dcbe575e"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get org",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/org",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "org"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get org by id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Globex\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/org/6a11ade495c22f68dcbe576f",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "org",
+                "6a11ade495c22f68dcbe576f"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "project",
+      "item": [
+        {
+          "name": "create",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orgId\": \"6a11de3b697ea8bd637b0f01\",\n  \"name\": \"Project Beta\",\n  \"description\": \"This project is currently in Alpha Beta\",\n  \"members\": [\"6a11d9718957a0130c43bec9\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/project",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "project"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get all project",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/project",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "project"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "update project",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\":\"Project Beta\",\n    \"description\":\"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/project/6a11b1634ced8fc9099aa022",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "project",
+                "6a11b1634ced8fc9099aa022"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "delete project",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"super.admin@superadmin.com\",\n    \"password\":\"superadmin123#\"\n}\n\n// {\n//     \"email\":\"admin@admin.com\",\n//     \"password\":\"admin123#\"\n// }\n\n// {\n//     \"email\": \"member.1@member.com\",\n//     \"password\":\"member1123#\"\n// }\n\n// {\n//     \"email\": \"member.2@member.com\",\n//     \"password\":\"member2123#\"\n// }"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/project/6a11b1634ced8fc9099aa022",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "project",
+                "6a11b1634ced8fc9099aa022"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "get project by id",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orgId\": \"6a11ad3c95c22f68dcbe575e\",\n  \"name\": \"Project Alpha\",\n  \"description\": \"This project is currently in Alpha stage\",\n  \"members\": [\"6a11a3d5a44842ee1900e7df\"]\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/api/v1/project/6a11b9e7d6ab4da1820e39d5",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "project",
+                "6a11b9e7d6ab4da1820e39d5"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

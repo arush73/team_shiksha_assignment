@@ -287,25 +287,5 @@ npm run dev
 
 The server will boot and connect to MongoDB, spinning up on `http://localhost:8080`.
 
----
-
-## 🧪 Testing Seeding / Pre-configured Credentials
-
-To quickly run checks against the API, you can authenticate using the following built-in users:
-
-1.  **Super Admin Account**:
-    - **Email**: `super.admin@superadmin.com`
-    - **Password**: `superadmin123#`
-2.  **Organization Admin Account**:
-    - **Email**: `admin@admin.com`
-    - **Password**: `admin123#`
-3.  **Project Member Account 1**:
-    - **Email**: `member.1@member.com`
-    - **Password**: `member1123#`
-4.  **Project Member Account 2**:
-    - **Email**: `member.2@member.com`
-    - **Password**: `member2123#`
-
----
 
 Built with ❤️ for strict security, reliability, and scale by [Arush Choudhary](https://github.com/arush73).

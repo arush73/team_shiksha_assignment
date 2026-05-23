@@ -12,6 +12,7 @@ import Org from "../models/org.models.js"
 import User from "../models/user.models.js"
 import { UserRolesEnum } from "../constants.js"
 
+// currently letting you create an org with or without members 
 const createOrg = asyncHandler(async (req, res) => {
   const validate = createOrgSchema.safeParse(req.body)
   if (!validate.success)
@@ -30,6 +31,7 @@ const createOrg = asyncHandler(async (req, res) => {
     name: validate.data.name.trim(),
     owner: req.user._id,
     description: validate.data.description,
+    members: validate.data.members || []
   })
 
   return res
@@ -118,6 +120,25 @@ const updateOrg = asyncHandler(async (req, res) => {
 
   if (validate.data.description)
     org.description = validate.data.description.trim()
+
+  if (validate.data.members) {
+    for (const memberId of validate.data.members) {
+      const user = await User.findById(memberId)
+      if (!user) throw new ApiError(404, "User not found")
+
+      if (org.owner.toString() === memberId) {
+        throw new ApiError(400, "User is already the owner of the organization")
+      }
+
+      const isMemberAlready = org.members.some((id) => id.toString() === memberId)
+
+      if (isMemberAlready) {
+        throw new ApiError(400, "User is already a member of the organization")
+      }
+    }
+
+    org.members = validate.data.members
+  }
 
   await org.save()
 
