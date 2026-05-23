@@ -1,8 +1,9 @@
-export const DB_NAME = ""
+export const DB_NAME = "team_shiksha_assignment"
 
 export const UserRolesEnum = {
   ADMIN: "ADMIN",
   USER: "USER",
+  SUPER_ADMIN: "SUPER_ADMIN",
 }
 
 export const AvailableUserRoles = Object.values(UserRolesEnum)

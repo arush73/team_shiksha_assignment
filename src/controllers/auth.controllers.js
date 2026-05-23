@@ -9,10 +9,23 @@ import {
   resetForgottenPasswordSchema,
 } from "../validators/auth.validators.js"
 import { UserRolesEnum, UserLoginType } from "../constants.js"
-import { emailVerificationMailgenContent, forgotPasswordMailgenContent, sendMail } from "../utils/mail.js"
+import {
+  emailVerificationMailgenContent,
+  forgotPasswordMailgenContent,
+  sendMail,
+} from "../utils/mail.js"
 import crypto from "crypto"
 import { uploadCloudinary } from "../utils/cloudinary.js"
 import jwt from "jsonwebtoken"
+
+/*
+Implement a multi-tenant system with strict data isolation between projects. 
+The system enforces three access levels:
+- Superadmins can view all projects across the entire application; 
+- Admins have full access to all projects within their specific organization; 
+- Project Members are restricted entirely to the specific projects they belong to, 
+with no ability to view or access any other project.
+*/
 
 const cookieOptions = () => {
   return {
@@ -30,20 +43,17 @@ const registerUser = asyncHandler(async (req, res) => {
       validate.error.issues.map((mess) => mess.message)
     )
 
-  const { username, email, password } = req.body
+  const { email, password } = req.body
 
   const existingUser = await User.findOne({
-    $or: [{ username }, { email }],
+    $or: [{ email }],
   })
-  if (existingUser)
-    throw new ApiError(409, "user with username or email already exists")
+  if (existingUser) throw new ApiError(409, "user with email already exists")
 
   const user = await User.create({
-    username,
     email,
     password,
     isEmailVerified: false,
-    // role: role || UserRolesEnum.USER
   })
 
   const { unHashedToken, hashedToken, tokenExpiry } =
@@ -53,16 +63,16 @@ const registerUser = asyncHandler(async (req, res) => {
   user.emailVerificationExpiry = tokenExpiry
   await user.save({ validateBeforeSave: false })
 
-  await sendMail({
-    email: user?.email,
-    subject: "Please verify your email",
-    mailgenContent: emailVerificationMailgenContent(
-      user.username,
-      `${req.protocol}://${req.get(
-        "host"
-      )}/api/v1/users/verify-email/${unHashedToken}`
-    ),
-  })
+  // await sendMail({
+  //   email: user?.email,
+  //   subject: "Please verify your email",
+  //   mailgenContent: emailVerificationMailgenContent(
+  //     user.username,
+  //     `${req.protocol}://${req.get(
+  //       "host"
+  //     )}/api/v1/users/verify-email/${unHashedToken}`
+  //   ),
+  // })
 
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken -emailVerificationToken -emailVerificationExpiry"
@@ -70,6 +80,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   if (!createdUser)
     throw new ApiError(500, "Something went wrong while registering the user")
+
   return res
     .status(201)
     .json(
@@ -88,13 +99,13 @@ const loginUser = asyncHandler(async (req, res) => {
       validate.error.issues.map((mess) => mess.message)
     )
 
-  const { email, username, password } = req.body
+  const { email, password } = req.body
 
   const user = await User.findOne({
-    $and: [{ username }, { email }],
+    $and: [{ email }],
   })
 
-  if (!user) throw new ApiError(404, "User with provided username and email does not exist")
+  if (!user) throw new ApiError(404, "User with provided email does not exist")
 
   if (user.loginType !== UserLoginType.EMAIL_PASSWORD) {
     throw new ApiError(
@@ -120,7 +131,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
   loggedInUser.refreshToken = refreshToken
   await loggedInUser.save({ validateBeforeSave: false })
-  
+
   return res
     .status(200)
     .cookie("accessToken", accessToken, cookieOptions())
@@ -244,16 +255,18 @@ const forgotPasswordRequest = asyncHandler(async (req, res) => {
   user.forgotPasswordExpiry = tokenExpiry
   await user.save({ validateBeforeSave: false })
 
-  console.log(await sendMail({
-    email: user?.email,
-    subject: "Password reset request",
-    mailgenContent: forgotPasswordMailgenContent(
-      user.username,
-      // ! NOTE: Following link should be the link of the frontend page responsible to request password reset
-      // ! Frontend will send the below token with the new password in the request body to the backend reset password endpoint
-      `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unHashedToken}`
-    ),
-  }))
+  console.log(
+    await sendMail({
+      email: user?.email,
+      subject: "Password reset request",
+      mailgenContent: forgotPasswordMailgenContent(
+        user.username,
+        // ! NOTE: Following link should be the link of the frontend page responsible to request password reset
+        // ! Frontend will send the below token with the new password in the request body to the backend reset password endpoint
+        `${process.env.FORGOT_PASSWORD_REDIRECT_URL}/${unHashedToken}`
+      ),
+    })
+  )
   return res
     .status(200)
     .json(

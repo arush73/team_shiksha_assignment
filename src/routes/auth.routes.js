@@ -16,7 +16,7 @@ import {
   changeCurrentPassword,
   getCurrentUser,
   updateUserAvatar,
-  handleSocialLogin
+  handleSocialLogin,
 } from "../controllers/auth.controllers.js"
 
 // open routes
@@ -56,10 +56,10 @@ router.route("/github").get(
 
 router
   .route("/google/callback")
-  .get(passport.authenticate("google"), handleSocialLogin);
+  .get(passport.authenticate("google"), handleSocialLogin)
 
 router
   .route("/github/callback")
-  .get(passport.authenticate("github"), handleSocialLogin);
+  .get(passport.authenticate("github"), handleSocialLogin)
 
 export default router

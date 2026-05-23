@@ -16,7 +16,8 @@ try {
   passport.deserializeUser(async (id, next) => {
     try {
       const user = await User.findById(id)
-      if (user) next(null, user) // return user of exist
+      if (user)
+        next(null, user) // return user of exist
       else next(new ApiError(404, "User does not exist"), null) // throw an error if user does not exist
     } catch (error) {
       next(

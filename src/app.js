@@ -57,9 +57,13 @@ app.use(passport.session())
 // importing routes
 import healthcheckRouter from "./routes/healthCheck.routes.js"
 import authRouter from "./routes/auth.routes.js"
+import orgRouter from "./routes/org.routes.js"
+import projectRouter from "./routes/project.routes.js"
 
 // decalring routes
 app.use("/api/v1/healthcheck", healthcheckRouter)
 app.use("/api/v1/auth", authRouter)
+app.use("/api/v1/org", orgRouter)
+app.use("/api/v1/project", projectRouter)
 
 export default app
