@@ -1,307 +1,298 @@
-# Noice Auth 🔐
+# TenantSphere 🌐
+### Enterprise Multi-Tenant SaaS Backend Engine
 
-A lightweight, production-ready authentication boilerplate for Node.js applications. Built with Express, MongoDB, and Passport.js, it provides a complete authentication system with email/password login, OAuth integration (Google & GitHub), and comprehensive user management features.
-
-<p align="center">
-  <a href="#-features">Features</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-project-structure">Project Structure</a> •
-  <a href="#-installation--setup">Installation</a> •
-  <a href="#-api-endpoints">API Endpoints</a> •
-  <a href="#-contributing">Contributing</a>
-</p>
+A robust, production-ready, and highly secure multi-tenant backend engine built with **Node.js**, **Express.js**, and **MongoDB/Mongoose**. The system is designed to provide strict tenant data isolation, granular Role-Based Access Control (RBAC), secure authentication session handling, and structured validation.
 
 ---
 
-<div id="-features">
+## 🚀 Key Architectural Highlights
 
-## 🚀 Features
+*   **Strict Multi-Tenant Isolation**: Complete logical and database boundaries between different organizations. Cross-tenant data leakages are systematically prevented at the controller level.
+*   **Granular Role-Based Access Control (RBAC)**: Enforces three distinct access layers:
+    *   **Superadmins**: Global application control. Can manage organizations, update ownerships, and view all projects across the entire system.
+    *   **Org Admins**: Full operational control over their specific organization, including adding organization members and performing full CRUD operations on all projects within that organization.
+    *   **Project Members**: Strictly confined to accessing only the specific projects they have been added to, with zero exposure to other projects within the same or different organizations.
+*   **Tenant Safety Constraints**: When adding members to a project, the engine validates that the target users belong to the organization. This guarantees that external users cannot be slipped into a tenant's internal project.
+*   **Production-Grade Logging**: Utilizes **Winston** for custom error/info logging and **Morgan** for detailed HTTP request stream tracking.
+*   **Robust Input Validation**: Strict validation for all requests using **Zod schemas**, keeping the controller logic focused on business rules.
+*   **Centralized Error Handling**: Built with custom `ApiError` and `ApiResponse` wrappers to return structured JSON errors/success payloads instead of leaking raw server stacks.
 
-### Authentication Methods
+---
 
-- **Email/Password Authentication**: Traditional registration and login with secure password hashing.
-- **OAuth 2.0 Integration**:
-  - Google OAuth via Passport.js
-  - GitHub OAuth via Passport.js
-- **JWT-Based Sessions**: Stateless authentication using Access and Refresh tokens.
-
-### Security Features
-
-- **Password Security**: Bcrypt hashing with salt rounds.
-- **Email Verification**: Token-based email verification system.
-- **Password Reset**: Secure forgot password flow with time-limited tokens.
-- **Rate Limiting**: Protection against brute-force attacks (5000 requests per 15 minutes).
-- **CORS Configuration**: Flexible cross-origin resource sharing setup.
-- **Secure Cookies**: HttpOnly and Secure cookie flags for token storage.
-
-### User Management
-
-- **Profile Management**: Update user avatar (Cloudinary integration).
-- **Password Management**: Change password for authenticated users.
-- **Token Refresh**: Automatic token refresh mechanism.
-- **User Roles**: Admin and User role-based access control.
-
-### Developer Experience
-
-- **Logging**: Winston and Morgan for comprehensive request/error logging.
-- **Input Validation**: Zod schemas for request validation.
-- **Error Handling**: Centralized error handling with custom ApiError class.
-- **Environment Config**: Dotenv for secure configuration management.
-
-</div>
-
-<div id="-tech-stack">
-
-## 🛠️ Tech Stack
-
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express.js](https://expressjs.com/) v5
-- **Database**: [MongoDB](https://www.mongodb.com/) with [Mongoose](https://mongoosejs.com/)
-- **Authentication**:
-  - [Passport.js](https://www.passportjs.org/) (OAuth strategies)
-  - [JWT](https://jwt.io/) (jsonwebtoken)
-  - [Bcrypt.js](https://github.com/dcodeIO/bcrypt.js) (password hashing)
-- **File Upload**: [Multer](https://github.com/expressjs/multer) + [Cloudinary](https://cloudinary.com/)
-- **Email**: [Nodemailer](https://nodemailer.com/) with [Mailgen](https://github.com/eladnava/mailgen)
-- **Validation**: [Zod](https://zod.dev/)
-- **Logging**: [Winston](https://github.com/winstonjs/winston), [Morgan](https://github.com/expressjs/morgan)
-
-</div>
-
-<div id="-project-structure">
-
-## 📂 Project Structure
+## 📂 Project Architecture
 
 ```
-noice-auth/
+TenantSphere/
 ├── src/
-│   ├── app.js                    # Express app configuration
-│   ├── index.js                  # Entry point & DB connection
+│   ├── app.js                    # Express app configuration & middleware pipeline
+│   ├── index.js                  # Application entry point & Database initialization
 │   ├── constants.js              # Application constants (Roles, Login types)
 │   ├── controllers/
-│   │   ├── auth.controllers.js   # Authentication logic
-│   │   └── healthCheck.controllers.js
+│   │   ├── auth.controllers.js   # Authentication & Profile management
+│   │   ├── org.controllers.js    # Multi-tenant Organization controllers
+│   │   └── project.controllers.js# Project lifecycle & isolation controllers
 │   ├── middlewares/
-│   │   ├── auth.middleware.js    # JWT verification
-│   │   └── multer.middleware.js  # File upload handling
+│   │   ├── auth.middleware.js    # JWT authorization & role verification middlewares
+│   │   └── multer.middleware.js  # File upload middleware (Cloudinary utility integration)
 │   ├── models/
-│   │   └── user.models.js        # User schema & methods
+│   │   ├── user.models.js        # User Schema, passwords hashing, token generation
+│   │   ├── org.models.js         # Organization Schema (owner & members arrays)
+│   │   └── project.models.js     # Project Schema (org binding & project members array)
 │   ├── routes/
-│   │   ├── auth.routes.js        # Auth endpoints
-│   │   └── healthCheck.routes.js
+│   │   ├── auth.routes.js        # Auth & profile route definitions
+│   │   ├── org.routes.js         # Organization management route definitions
+│   │   └── project.routes.js     # Project CRUD and member assignment route definitions
 │   ├── utils/
-│   │   ├── ApiError.js           # Custom error class
-│   │   ├── ApiResponse.js        # Standardized responses
-│   │   ├── asyncHandler.js       # Async error wrapper
-│   │   ├── cloudinary.js         # Cloudinary upload utility
-│   │   ├── db.js                 # Database connection
-│   │   └── mail.js               # Email sending utility
+│   │   ├── ApiError.js           # Customized API error wrapper class
+│   │   ├── ApiResponse.js        # Customized API response wrapper class
+│   │   ├── asyncHandler.js       # Asynchronous router handler wrapper
+│   │   ├── cloudinary.js         # Cloudinary asset storage connector
+│   │   ├── db.js                 # Mongoose MongoDB connection initializer
+│   │   └── mail.js               # Mailtrap / Nodemailer communication handler
 │   ├── validators/
-│   │   └── auth.validators.js    # Zod validation schemas
+│   │   ├── auth.validators.js    # Zod schemas for login and registrations
+│   │   ├── org.validators.js     # Zod schemas for organization creation & members
+│   │   └── project.validators.js  # Zod schemas for project CRUD operations
 │   ├── logger/
-│   │   ├── winston.logger.js     # Winston configuration
-│   │   └── morgan.logger.js      # Morgan configuration
+│   │   ├── winston.logger.js     # Winston logs configuration
+│   │   └── morgan.logger.js      # Morgan routing logs configuration
 │   └── passport/
-│       └── index.js              # Passport strategies setup
-├── public/                       # Static files & uploads
-├── .env.sample                   # Environment variables template
-└── package.json                  # Dependencies
+│       └── index.js              # OAuth 2.0 configuration (Google & GitHub Strategies)
+├── public/                       # Static resource directory
+├── .env.sample                   # Environment configuration template
+└── package.json                  # Node.js dependencies configuration
 ```
 
-</div>
+---
 
-<div id="-installation--setup">
+## 🛠️ Technology Stack
+
+*   **Core**: [Node.js](https://nodejs.org/) & [Express.js](https://expressjs.com/) v5
+*   **Database**: [MongoDB](https://www.mongodb.com/) via [Mongoose ODM](https://mongoosejs.com/)
+*   **Authentication**:
+    *   [Passport.js](https://www.passportjs.org/) for Google OAuth Integration.
+    *   [JSON Web Tokens (JWT)](https://jwt.io/) for access/refresh session control.
+    *   [Bcrypt.js](https://github.com/dcodeIO/bcrypt.js) for high-entropy password hashing.
+*   **Validation**: [Zod](https://zod.dev/) Schema Validation
+*   **Assets Storage**: [Multer](https://github.com/expressjs/multer) & [Cloudinary SDK](https://cloudinary.com/)
+*   **Transactional Email**: [Nodemailer](https://nodemailer.com/) + [Mailgen](https://github.com/eladnava/mailgen)
+*   **Logging System**: [Winston](https://github.com/winstonjs/winston) & [Morgan](https://github.com/expressjs/morgan)
+
+---
+
+## 🔐 Multi-Tenant Authorization Matrix
+
+The table below illustrates the permission boundary enforced across the organization resources:
+
+| Action | Superadmin | Org Admin (Owner/Member) | Project Member (User) | Guest / Unauthenticated |
+| :--- | :---: | :---: | :---: | :---: |
+| **Create Org** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| **List Orgs** | ✅ View All | ✅ View Belonging Orgs | ✅ View Belonging Orgs | ❌ No |
+| **Add Org Member** | ✅ Yes | ✅ Yes (Within Own Org) | ❌ No | ❌ No |
+| **Update Org** | ✅ Yes | ✅ Yes (Within Own Org) | ❌ No | ❌ No |
+| **Delete Org** | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| **Create Project** | ✅ Yes | ✅ Yes (Within Own Org) | ❌ No | ❌ No |
+| **List Projects** | ✅ View All | ✅ View All in Own Org | ✅ View Assigned Only | ❌ No |
+| **Get Project** | ✅ Yes | ✅ Yes (Within Own Org) | ✅ Yes (If Assigned) | ❌ No |
+| **Update Project** | ✅ Yes | ✅ Yes (Within Own Org) | ❌ No | ❌ No |
+| **Delete Project** | ✅ Yes | ✅ Yes (Within Own Org) | ❌ No | ❌ No |
+
+---
+
+## 👥 Access Isolation Flows
+
+```mermaid
+graph TD
+    User([HTTP Request]) --> JWTFilter{Verify JWT}
+    JWTFilter -- Invalid Token --> Err1[401 Unauthorized]
+    JWTFilter -- Valid Token --> RoleCheck{Role Evaluator}
+    
+    RoleCheck -- SUPER_ADMIN --> SuperFlow[Full access to Orgs & Projects]
+    
+    RoleCheck -- ADMIN --> AdminFlowOrg{Is Owner/Member of Org?}
+    AdminFlowOrg -- Yes --> AdminAllow[Manage Org Projects & Members]
+    AdminFlowOrg -- No --> Err2[403 Forbidden]
+    
+    RoleCheck -- USER --> UserFlowProj{Is Assigned to Project?}
+    UserFlowProj -- Yes --> UserAllow[Access Assigned Project]
+    UserFlowProj -- No --> Err3[403 Forbidden]
+```
+
+---
+
+## 🗄️ Database Schemas
+
+### 1. User Schema (`User`)
+Represents the user account, registration status, OAuth profiles, and platform roles.
+*   `email` (String, Unique, Required): Primary identifier.
+*   `role` (String, Enum: `SUPER_ADMIN`, `ADMIN`, `USER`): Enforces RBAC permissions.
+*   `password` (String, Required): Hashed with Bcrypt.
+*   `avatar` (String): Cloudinary link to the user's avatar image.
+*   `isEmailVerified` (Boolean): Flag for transactional email validation flow.
+*   `loginType` (String, Enum: `GOOGLE`, `GITHUB`, `EMAIL_PASSWORD`): Tracks origin provider.
+*   `refreshToken` (String): Stored for token rotation protocol.
+
+### 2. Organization Schema (`Org`)
+Represents a Tenant workspace.
+*   `name` (String, Required): The name of the organization.
+*   `description` (String): Brief overview of the organization.
+*   `owner` (ObjectId, Ref: `User`, Required): Pointer to the primary administrator of the tenant.
+*   `members` (Array of ObjectIds, Ref: `User`): Array of users mapped to the organization workspace.
+
+### 3. Project Schema (`Project`)
+Represents a project situated inside an organization.
+*   `name` (String, Required): Project name (must be unique within the organization).
+*   `description` (String): Project overview.
+*   `org` (ObjectId, Ref: `Org`, Required): Strict link to the parent organization.
+*   `members` (Array of ObjectIds, Ref: `User`): List of users assigned to this specific project.
+*   `createdBy` (ObjectId, Ref: `User`, Required): User who initialized the project.
+
+---
+
+## 📡 API Reference
+
+All requests must have the prefix `/api/v1`. Protected routes require providing the token via `Authorization: Bearer <accessToken>` or cookies.
+
+### 🔑 Authentication Routes (`/auth`)
+
+*   `POST /auth/register`
+    *   Registers a new user account.
+    *   **Body**: `{ "email": "user@example.com", "password": "securePassword123#" }`
+*   `POST /auth/login`
+    *   Authenticates credentials, returns user profile, access token, and sets cookies.
+    *   **Body**: `{ "email": "user@example.com", "password": "securePassword123#" }`
+*   `POST /auth/logout` (Protected)
+    *   Logs out the authenticated user and clears session tokens.
+*   `POST /auth/refresh-token`
+    *   Uses cookie-based refresh token to return a rotated access token.
+*   `GET /auth/verify-email/:verificationToken`
+    *   Marks the user's email verified based on validation code.
+*   `POST /auth/forgot-password`
+    *   Triggers forgot password email flow with reset token link.
+*   `POST /auth/reset-password/:resetToken`
+    *   Sets a new password using the provided time-restricted reset token.
+*   `POST /auth/change-password` (Protected)
+    *   Changes password using credentials verification.
+*   `GET /auth/current-user` (Protected)
+    *   Fetches profile data of the logged-in session owner.
+*   `PATCH /auth/avatar` (Protected)
+    *   Updates user avatar utilizing a `multipart/form-data` request under the `avatar` file field.
+
+---
+
+### 🏢 Organization Routes (`/org`)
+
+*   `POST /org` (Protected, `SUPER_ADMIN`)
+    *   Creates a new tenant workspace.
+    *   **Body**: `{ "name": "Google", "description": "Tech company workspace" }`
+*   `GET /org` (Protected)
+    *   Lists organizations. Superadmins see all; Admins and standard Users see organizations where they are owner or member.
+*   `GET /org/:orgId` (Protected)
+    *   Fetches organization workspace details. Access restricted to Superadmins, Org owner, or Org members.
+*   `PATCH /org/:orgId` (Protected, `SUPER_ADMIN` or Org `ADMIN`)
+    *   Updates organization properties (name, description).
+*   `DELETE /org/:orgId` (Protected, `SUPER_ADMIN`)
+    *   Deletes organization from the database.
+*   `POST /org/:orgId/members` (Protected, `SUPER_ADMIN` or Org `ADMIN`)
+    *   Adds a user to the organization's members.
+    *   **Body**: `{ "memberId": "6a11a3d5a44842ee1900e7df" }`
+
+---
+
+### 📁 Project Routes (`/project`)
+
+*   `POST /project` (Protected, `SUPER_ADMIN` or Org `ADMIN`)
+    *   Creates a project inside a specific organization. Validates that all members specified in the `members` array belong to the parent organization.
+    *   **Body**: `{ "orgId": "...", "name": "Alpha Project", "description": "First Phase", "members": ["userId1", "userId2"] }`
+*   `GET /project` (Protected)
+    *   List projects. Superadmins see all projects; Org Admins see all projects in their orgs; standard Users see only projects they are assigned to.
+*   `GET /project/:projectId` (Protected)
+    *   Fetches project details. Allowed for Superadmins, Org Admins, and assigned project members.
+*   `PATCH /project/:projectId` (Protected, `SUPER_ADMIN` or Org `ADMIN`)
+    *   Updates project attributes (name, description, members). Enforces that any new members are part of the parent organization.
+*   `DELETE /project/:projectId` (Protected, `SUPER_ADMIN` or Org `ADMIN`)
+    *   Removes the project workspace.
+
+---
 
 ## ⚙️ Installation & Setup
 
-1.  **Clone the repository:**
+Follow these steps to run the application locally:
 
-    ```bash
-    git clone https://github.com/arush73/noice-auth.git
-    cd noice-auth
-    ```
+### 1. Clone the repository
+```bash
+git clone https://github.com/arush73/team_shiksha_assignment.git
+cd team_shiksha_assignment
+```
 
-2.  **Install dependencies:**
+### 2. Install dependencies
+```bash
+npm install
+```
 
-    ```bash
-    npm install
-    ```
+### 3. Setup Environment Configuration
+Create a `.env` file in the project root:
+```env
+PORT=8080
+MONGODB_URI=mongodb://127.0.0.1:27017
+NODE_ENV=development
 
-3.  **Configure Environment Variables:**
-    Create a `.env` file in the root directory based on `.env.sample`:
+# Authentication Secrets
+EXPRESS_SESSION_SECRET=superSecretSessionKey123#
+ACCESS_TOKEN_SECRET=accessTokenSecretSignatureKey456#
+ACCESS_TOKEN_EXPIRY=1d
+REFRESH_TOKEN_SECRET=refreshTokenSecretSignatureKey789#
+REFRESH_TOKEN_EXPIRY=10d
 
-    ```env
-    PORT=8080
-    MONGODB_URI=mongodb://localhost:27017
-    NODE_ENV=development
+# Cross-Origin Resource Sharing
+CORS_ORIGIN=http://localhost:3000
 
-    # Session & JWT Secrets
-    EXPRESS_SESSION_SECRET=<your_secret>
-    ACCESS_TOKEN_SECRET=<your_secret>
-    ACCESS_TOKEN_EXPIRY=1d
-    REFRESH_TOKEN_SECRET=<your_secret>
-    REFRESH_TOKEN_EXPIRY=10d
+# Cloudinary Integration (Asset Storage)
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 
-    # CORS
-    CORS_ORIGIN=http://localhost:3000
+# Email Config (Mailtrap SMTP for Sandbox Testing)
+MAILTRAP_SMTP_HOST=sandbox.smtp.mailtrap.io
+MAILTRAP_SMTP_PORT=2525
+MAILTRAP_SMTP_USER=your_mailtrap_smtp_user
+MAILTRAP_SMTP_PASS=your_mailtrap_smtp_pass
 
-    # Email (Mailtrap for development)
-    MAILTRAP_SMTP_HOST=sandbox.smtp.mailtrap.io
-    MAILTRAP_SMTP_PORT=2525
-    MAILTRAP_SMTP_USER=<your_user>
-    MAILTRAP_SMTP_PASS=<your_pass>
+# Google OAuth Keys
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:8080/api/v1/auth/google/callback
 
-    GMAIL_USER=<your_gmail_user>
-    GMAIL_PASSWORD=<your_gmail_password>
+# Frontend Redirection Rules
+CLIENT_SSO_REDIRECT_URL=http://localhost:3000/user/profile
+FORGOT_PASSWORD_REDIRECT_URL=http://localhost:3000/forgot-password
+```
 
-    # OAuth - Google
-    GOOGLE_CLIENT_ID=<your_google_client_id>
-    GOOGLE_CLIENT_SECRET=<your_google_client_secret>
-    GOOGLE_CALLBACK_URL=http://localhost:8080/api/v1/auth/google/callback
-
-    # OAuth - GitHub
-    GITHUB_CLIENT_ID=<your_github_client_id>
-    GITHUB_CLIENT_SECRET=<your_github_client_secret>
-    GITHUB_CALLBACK_URL=http://localhost:8080/api/v1/auth/github/callback
-
-    # Cloudinary (for avatar uploads)
-    CLOUDINARY_CLOUD_NAME=<your_cloud_name>
-    CLOUDINARY_API_KEY=<your_api_key>
-    CLOUDINARY_API_SECRET=<your_api_secret>
-
-    # Frontend URLs
-    CLIENT_SSO_REDIRECT_URL=http://localhost:3000/user/profile
-    FORGOT_PASSWORD_REDIRECT_URL=http://localhost:3000/forgot-password
-    ```
-
-4.  **Start the Server:**
-
-    ```bash
-    # Development mode (with Nodemon)
-    npm run dev
-
-    # Production mode
-    npm start
-    ```
-
-</div>
-
-<div id="-api-endpoints">
-
-## 📡 API Endpoints
-
-### Open Routes (No Authentication Required)
-
-#### User Registration
-
-- `POST /api/v1/auth/register`
-  - **Body**: `{ email, password }`
-  - **Response**: User object + Access/Refresh tokens (cookies)
-
-#### User Login
-
-- `POST /api/v1/auth/login`
-  - **Body**: `{ email, password }`
-  - **Response**: User object + Access/Refresh tokens (cookies)
-
-#### Email Verification
-
-- `GET /api/v1/auth/verify-email/:verificationToken`
-  - **Params**: `verificationToken`
-  - **Response**: HTML success/failure page
-
-#### Forgot Password
-
-- `POST /api/v1/auth/forgot-password`
-  - **Body**: `{ email }`
-  - **Response**: Success message (email sent)
-
-#### Reset Password
-
-- `POST /api/v1/auth/reset-password/:resetToken`
-  - **Params**: `resetToken`
-  - **Body**: `{ newPassword }`
-  - **Response**: Success message
-
-#### Refresh Access Token
-
-- `POST /api/v1/auth/refresh-token`
-  - **Cookies**: `refreshToken`
-  - **Response**: New Access/Refresh tokens
-
-### OAuth Routes
-
-#### Google OAuth
-
-- `GET /api/v1/auth/google` - Initiates Google OAuth flow
-- `GET /api/v1/auth/google/callback` - Google OAuth callback
-
-#### GitHub OAuth
-
-- `GET /api/v1/auth/github` - Initiates GitHub OAuth flow
-- `GET /api/v1/auth/github/callback` - GitHub OAuth callback
-
-### Protected Routes (Authentication Required)
-
-#### Logout
-
-- `POST /api/v1/auth/logout`
-  - **Headers**: `Authorization: Bearer <accessToken>`
-  - **Response**: Success message
-
-#### Get Current User
-
-- `GET /api/v1/auth/current-user`
-  - **Headers**: `Authorization: Bearer <accessToken>`
-  - **Response**: Current user object
-
-#### Change Password
-
-- `POST /api/v1/auth/change-password`
-  - **Headers**: `Authorization: Bearer <accessToken>`
-  - **Body**: `{ oldPassword, newPassword }`
-  - **Response**: Success message
-
-#### Update Avatar
-
-- `PATCH /api/v1/auth/avatar`
-  - **Headers**: `Authorization: Bearer <accessToken>`
-  - **Body**: `multipart/form-data` with `avatar` field
-  - **Response**: Updated user object
-
-### Health Check
-
-- `GET /api/v1/healthcheck`
-  - **Response**: Server status
-
-</div>
-
-<div id="-contributing">
-
-## 🤝 Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1.  Fork the repository
-2.  Create a feature branch (`git checkout -b feature/amazing-feature`)
-3.  Commit your changes (`git commit -m 'Add some amazing feature'`)
-4.  Push to the branch (`git push origin feature/amazing-feature`)
-5.  Open a Pull Request
-
-</div>
-
-## 📄 License
-
-This project is licensed under the ISC License.
+### 4. Running the Development Server
+```bash
+npm run dev
+```
+The server will boot and connect to MongoDB, spinning up on `http://localhost:8080`.
 
 ---
 
-## 🔑 Key Highlights
+## 🧪 Testing Seeding / Pre-configured Credentials
 
-- **Zero Configuration**: Works out of the box with minimal setup
-- **Production Ready**: Includes logging, error handling, and security best practices
-- **Extensible**: Easy to add new authentication providers or features
-- **Well Documented**: Clear code structure and comprehensive comments
-- **Modern Stack**: Uses latest versions of Express, Mongoose, and other dependencies
+To quickly run checks against the API, you can authenticate using the following built-in users:
 
-Built with ❤️ by [Arush Choudhary](https://github.com/arush73)
+1.  **Super Admin Account**:
+    *   **Email**: `super.admin@superadmin.com`
+    *   **Password**: `superadmin123#`
+2.  **Organization Admin Account**:
+    *   **Email**: `admin@admin.com`
+    *   **Password**: `admin123#`
+3.  **Project Member Account 1**:
+    *   **Email**: `member.1@member.com`
+    *   **Password**: `member1123#`
+4.  **Project Member Account 2**:
+    *   **Email**: `member.2@member.com`
+    *   **Password**: `member2123#`
+
+---
+
+Built with ❤️ for strict security, reliability, and scale by [Arush Choudhary](https://github.com/arush73).
