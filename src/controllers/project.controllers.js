@@ -13,45 +13,36 @@ import { UserRolesEnum } from "../constants.js"
 
 const createProject = asyncHandler(async (req, res) => {
   const validate = createProjectSchema.safeParse(req.body)
-  if (!validate.success) 
-
+  if (!validate.success)
     throw new ApiError(
       400,
       validate.error.issues.map((err) => err.message)
     )
 
-  const {
-    orgId,
-    name,
-    description,
-    members,
-  } = validate.data
+  const { orgId, name, description, members } = validate.data
 
   const org = await Org.findById(orgId)
 
   if (!org) throw new ApiError(404, "Organization not found")
 
-  const isSuperAdmin =
-    req.user.role === UserRolesEnum.SUPER_ADMIN
+  const isSuperAdmin = req.user.role === UserRolesEnum.SUPER_ADMIN
 
   const isOwnOrgAdmin =
     req.user.role === UserRolesEnum.ADMIN &&
     org.owner.toString() === req.user._id.toString()
 
-  if (!isSuperAdmin && !isOwnOrgAdmin) 
+  if (!isSuperAdmin && !isOwnOrgAdmin)
     throw new ApiError(
       403,
       "You are not allowed to create projects in this organization"
     )
-
-
 
   const existingProject = await Project.findOne({
     org: org._id,
     name: name.trim(),
   })
 
-  if (existingProject) 
+  if (existingProject)
     throw new ApiError(
       409,
       "Project with this name already exists in this organization"
@@ -66,15 +57,11 @@ const createProject = asyncHandler(async (req, res) => {
     ]
 
     const invalidMembers = members.filter(
-      (memberId) =>
-        !allowedMembers.includes(memberId.toString())
+      (memberId) => !allowedMembers.includes(memberId.toString())
     )
 
-    if (invalidMembers.length > 0) 
-      throw new ApiError(
-        400,
-        "Some users are not part of this organization"
-      )
+    if (invalidMembers.length > 0)
+      throw new ApiError(400, "Some users are not part of this organization")
   }
 
   const project = await Project.create({
@@ -85,14 +72,9 @@ const createProject = asyncHandler(async (req, res) => {
     createdBy: req.user._id,
   })
 
-  return res.status(201).json(
-    new ApiResponse(
-      201,
-      project,
-      "Project created successfully"
-    )
-  )
-
+  return res
+    .status(201)
+    .json(new ApiResponse(201, project, "Project created successfully"))
 })
 
 const getProject = asyncHandler(async (req, res) => {
